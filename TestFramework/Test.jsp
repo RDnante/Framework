@@ -1,3 +1,7 @@
+<%@ page import="Dept.Dept" %>
+<%
+    Dept[] d = (Dept[]) request.getAttribute("dept");
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +11,11 @@
     <title>Document</title>
 </head>
 <body>
-    salut
+    bienvenue presentation
+    <ul>
+    <% for(Dept de : d) {%>   
+            <li><% out.print(de.getNom()); %></li>
+    <% } %>
+    </ul>  
 </body>
 </html>
