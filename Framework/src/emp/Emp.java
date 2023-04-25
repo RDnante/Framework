@@ -27,9 +27,4 @@ public class Emp {
     public void setAge(int age) {
         Age = age;
     }
-
-    @AnnotationMethod(nom = "/presentation")
-    public String present() {
-        return this.getNom();
-    }
 }

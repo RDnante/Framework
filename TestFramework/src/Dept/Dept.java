@@ -3,6 +3,7 @@ package Dept;
 import java.util.HashMap;
 
 import etu1825.framework.AnnotationMethod;
+import etu1825.framework.ModelView;
 
 public class Dept {
     String Nom;
@@ -33,14 +34,11 @@ public class Dept {
     }
 
     @AnnotationMethod(nom = "/alefa")
-    public void test() {
+    public ModelView nom() {
+        ModelView m = new ModelView();
+        m.setView("Test.jsp");
 
+        return m;
     }
 
-
-    public String save() {
-        String req = "insert into "+this.getNom()+" and "+this.getNombre();
-
-        return req;
-    }
 }
