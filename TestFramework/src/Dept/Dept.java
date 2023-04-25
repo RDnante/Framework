@@ -38,6 +38,15 @@ public class Dept {
         ModelView m = new ModelView();
         m.setView("Test.jsp");
 
+        Dept[] d = new Dept[2];
+        d[0] = new Dept("jean");
+        d[1] = new Dept("pascal");
+
+        HashMap<String,Object> hash = new HashMap<String,Object>();
+        hash.put("dept",d);
+
+        m.setData(hash);
+
         return m;
     }
 
