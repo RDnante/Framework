@@ -4,9 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.*;
 import java.io.*;
+import java.lang.reflect.Method;
+
 import org.w3c.dom.*;
+
+import etu1825.framework.Mapping;
 
 public class Util {
 
@@ -97,6 +102,7 @@ public class Util {
         return valiny;
     }
     
+    // Sprint 123
     public List<Class<?>> getallclass(HttpServlet servlet) throws Exception {
         List<Class<?>> classes = new ArrayList<>();
         String config = "WEB-INF/classes";
@@ -115,5 +121,24 @@ public class Util {
 
 
         return valiny;
+    }
+
+    public Object cast_Object(Class<?> parameterType, HttpServletRequest request, String nom) throws Exception {
+        Object value = null;
+    
+        if (parameterType == String.class) {
+            value = request.getParameter(nom);
+        } else if (parameterType == int.class || parameterType == Integer.class) {
+            value = Integer.parseInt(request.getParameter(nom));
+        } else if (parameterType == double.class || parameterType == Double.class) {
+            value = Double.parseDouble(request.getParameter(nom));
+        } else if (parameterType == boolean.class || parameterType == Boolean.class) {
+            value = Boolean.parseBoolean(request.getParameter(nom));
+        } else {
+            // Autres types de données peuvent être gérés de manière similaire
+            throw new IllegalArgumentException("Type de paramètre non géré : " + parameterType.getName());
+        }
+
+        return value;
     }
 }
