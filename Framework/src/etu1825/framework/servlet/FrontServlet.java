@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -21,11 +23,10 @@ import utils.*;;
 
 public class FrontServlet extends HttpServlet {
     HashMap<String,Mapping> MappingUrls = new HashMap<String, Mapping>();
+    private static Util u = new Util();
 
     public void init(PrintWriter out) throws Exception {
         try {
-            Util u = new Util();
-
             List<Class<?>> classes = u.getallclass(this);
 
             for(Class<?> c : classes) {
@@ -64,7 +65,6 @@ public class FrontServlet extends HttpServlet {
     }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Util u = new Util();
         PrintWriter out = response.getWriter();
 
         String url = request.getRequestURI().toString();
@@ -85,37 +85,53 @@ public class FrontServlet extends HttpServlet {
             Class<?> c = Class.forName(map.getClassName());
             Object o = c.getDeclaredConstructor().newInstance();
 
+            // prend la methode correspondant a l'appel dans l'url
+            Method[] list_m = o.getClass().getDeclaredMethods();
+            Method m = null;
+            for(Method mi : list_m) {
+                if (map.getMethod().equals(mi.getName())) {
+                    m = mi;
+                    break;
+                }
+            }
+
             // sprint 7
             Enumeration<String> v =  request.getParameterNames();
 
-            while(v.hasMoreElements()) {
-                String nom = v.nextElement();
-                Field field = o.getClass().getDeclaredField(nom);
-                if (field == null) {
-                    continue;
+            if (m.getAnnotation(AnnotationMethod.class).parameters().equals("")) {
+                while(v.hasMoreElements()) {
+                    String nom = v.nextElement();
+                    Field field = o.getClass().getDeclaredField(nom);
+                    if (field == null) {
+                        continue;
+                    }
+    
+                    Object value = null;
+                    Class<?> parameterType = o.getClass().getDeclaredMethod("set" + nom , field.getType()).getParameterTypes()[0];
+    
+                    // cast un objet en un Objet equivalent au demande
+                    value = u.cast_Object(parameterType, request, nom);
+    
+                    o.getClass().getDeclaredMethod("set"+nom, parameterType).invoke(o,value);
                 }
-
-                Object value = null;
-                Class<?> parameterType = o.getClass().getDeclaredMethod("set" + nom , field.getType()).getParameterTypes()[0];
-
-                if (parameterType == String.class) {
-                    value = request.getParameter(nom);
-                } else if (parameterType == int.class || parameterType == Integer.class) {
-                    value = Integer.parseInt(request.getParameter(nom));
-                } else if (parameterType == double.class || parameterType == Double.class) {
-                    value = Double.parseDouble(request.getParameter(nom));
-                } else if (parameterType == boolean.class || parameterType == Boolean.class) {
-                    value = Boolean.parseBoolean(request.getParameter(nom));
-                } else {
-                    // Autres types de données peuvent être gérés de manière similaire
-                    throw new IllegalArgumentException("Type de paramètre non géré : " + parameterType.getName());
-                }
-
-                o.getClass().getDeclaredMethod("set"+nom, parameterType).invoke(o,value);
-                out.println(nom);
             }
+            // fin sprint 7
 
-            ModelView mv = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
+            // sprint 8
+            ArrayList<Class<?>> parameter_types = new ArrayList<Class<?>>();
+
+            Class<?>[] param_class = m.getParameterTypes();
+            ArrayList<Object> value = new ArrayList<>();
+            if (param_class.length != 0) {
+                parameter_types.addAll(new ArrayList<>(Arrays.asList(param_class)));
+                String[] p = m.getAnnotation(AnnotationMethod.class).parameters().split(",");
+                for (int i = 0; i<param_class.length; i++) {
+                    value.add(u.cast_Object(param_class[i], request, p[i]));
+                }
+            }
+            // fin Sprint 8
+            
+            ModelView mv = (ModelView) o.getClass().getMethod(map.getMethod(),param_class).invoke(o, value.toArray());
 
             HashMap<String,Object> data = mv.getData();
 
@@ -125,9 +141,6 @@ public class FrontServlet extends HttpServlet {
                     request.setAttribute(key, donnee);
                 }
             }
-
-            // sprint7
-            // o.getClass().getDeclaredMethod("save").invoke(o);
 
             RequestDispatcher dispatcher = request.getRequestDispatcher(mv.getView());
             dispatcher.forward(request, response);

@@ -2,11 +2,17 @@
 <%
     Dept[] d = null;
     String req = null;
+    int id = 0;
+    String nom = null;
     if (request.getAttribute("dept") != null) {
         d = (Dept[]) request.getAttribute("dept");
     }
     if (request.getAttribute("req") != null) {
         req = (String) request.getAttribute("req");
+    }
+    else if(request.getAttribute("id") != null && request.getAttribute("nom") != null) {
+        id = (Integer) request.getAttribute("id");
+        nom = (String) request.getAttribute("nom");
     }
 %>
 <!DOCTYPE html>
@@ -27,6 +33,10 @@
      } %>
     <% if (req != null) { %>
         <h4><% out.print(req); %></h4>
+    <%
+     } %>
+     <% if (nom != null) { %>
+        <h4><% out.print("mon id est"+id+"et mon nom est:"+nom); %></h4>
     <%
      } %>
     </ul>  

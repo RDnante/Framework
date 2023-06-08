@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface AnnotationMethod {
     String nom();
+    String parameters() default "";
 }
