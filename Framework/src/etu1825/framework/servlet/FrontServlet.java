@@ -2,7 +2,9 @@ package etu1825.framework.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 
@@ -38,10 +40,10 @@ public class FrontServlet extends HttpServlet {
                 }
             }
 
-            for (String key : MappingUrls.keySet()) {
-                Mapping value = MappingUrls.get(key);
-                out.println(key + " : " + value.getClassName() +"  "+ value.getMethod());
-            }
+            // for (String key : MappingUrls.keySet()) {
+            //     Mapping value = MappingUrls.get(key);
+            //     out.println(key + " : " + value.getClassName() +"  "+ value.getMethod());
+            // }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,8 +69,8 @@ public class FrontServlet extends HttpServlet {
 
         String url = request.getRequestURI().toString();
 
-        out.println("url"+url);
-        out.println("context"+request.getContextPath());
+        // out.println("url"+url);
+        // out.println("context"+request.getContextPath());
 
         try {
             this.init(out);
@@ -80,10 +82,39 @@ public class FrontServlet extends HttpServlet {
                 throw new Exception("tsy misy mapping");
             }
 
-            out.println("misy");
-
             Class<?> c = Class.forName(map.getClassName());
             Object o = c.getDeclaredConstructor().newInstance();
+
+            // sprint 7
+            Enumeration<String> v =  request.getParameterNames();
+
+            while(v.hasMoreElements()) {
+                String nom = v.nextElement();
+                Field field = o.getClass().getDeclaredField(nom);
+                if (field == null) {
+                    continue;
+                }
+
+                Object value = null;
+                Class<?> parameterType = o.getClass().getDeclaredMethod("set" + nom , field.getType()).getParameterTypes()[0];
+
+                if (parameterType == String.class) {
+                    value = request.getParameter(nom);
+                } else if (parameterType == int.class || parameterType == Integer.class) {
+                    value = Integer.parseInt(request.getParameter(nom));
+                } else if (parameterType == double.class || parameterType == Double.class) {
+                    value = Double.parseDouble(request.getParameter(nom));
+                } else if (parameterType == boolean.class || parameterType == Boolean.class) {
+                    value = Boolean.parseBoolean(request.getParameter(nom));
+                } else {
+                    // Autres types de données peuvent être gérés de manière similaire
+                    throw new IllegalArgumentException("Type de paramètre non géré : " + parameterType.getName());
+                }
+
+                o.getClass().getDeclaredMethod("set"+nom, parameterType).invoke(o,value);
+                out.println(nom);
+            }
+
             ModelView mv = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
 
             HashMap<String,Object> data = mv.getData();
@@ -95,11 +126,13 @@ public class FrontServlet extends HttpServlet {
                 }
             }
 
+            // sprint7
+            // o.getClass().getDeclaredMethod("save").invoke(o);
+
             RequestDispatcher dispatcher = request.getRequestDispatcher(mv.getView());
             dispatcher.forward(request, response);
 
         } catch (Exception e) {
-            e.printStackTrace();
             out.println(e.getMessage());
         }
     }

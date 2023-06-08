@@ -13,9 +13,8 @@ public class Dept {
         return Nombre;
     }
 
-    public void setNombre(String nombre) {
-        int n = Integer.parseInt(nombre);
-        Nombre = n;
+    public void setNombre(int nombre) {
+        Nombre = nombre;
     }
 
     public Dept() {
@@ -44,6 +43,20 @@ public class Dept {
 
         HashMap<String,Object> hash = new HashMap<String,Object>();
         hash.put("dept",d);
+
+        m.setData(hash);
+
+        return m;
+    }
+
+    @AnnotationMethod(nom = "/save")
+    public ModelView save() {
+        ModelView m = new ModelView();
+        m.setView("Test.jsp");
+
+        String req = "insert into "+this.getNom()+" and "+this.getNombre();
+        HashMap<String,Object> hash = new HashMap<String,Object>();
+        hash.put("req", req);
 
         m.setData(hash);
 

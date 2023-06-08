@@ -1,6 +1,13 @@
 <%@ page import="Dept.Dept" %>
 <%
-    Dept[] d = (Dept[]) request.getAttribute("dept");
+    Dept[] d = null;
+    String req = null;
+    if (request.getAttribute("dept") != null) {
+        d = (Dept[]) request.getAttribute("dept");
+    }
+    if (request.getAttribute("req") != null) {
+        req = (String) request.getAttribute("req");
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,9 +20,15 @@
 <body>
     bienvenue presentation
     <ul>
-    <% for(Dept de : d) {%>   
+    <% if (d != null) {
+    for(Dept de : d) {%>   
             <li><% out.print(de.getNom()); %></li>
-    <% } %>
+    <% }
+     } %>
+    <% if (req != null) { %>
+        <h4><% out.print(req); %></h4>
+    <%
+     } %>
     </ul>  
 </body>
 </html>
