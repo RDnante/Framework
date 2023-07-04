@@ -49,6 +49,7 @@ public class Dept {
         return m;
     }
 
+    // sprint 7
     @AnnotationMethod(nom = "/save")
     public ModelView save() {
         ModelView m = new ModelView();
@@ -63,6 +64,7 @@ public class Dept {
         return m;
     }
 
+    // sprint 8
     @AnnotationMethod(nom = "/param" , parameters = "id,nom")
     public ModelView Test_parameter(int id, String nom) {
         ModelView m = new ModelView();
@@ -73,6 +75,14 @@ public class Dept {
         hash.put("nom", nom);
 
         m.setData(hash);
+
+        return m;
+    }
+
+    @AnnotationMethod(nom="/fichier", parameters = "file")
+    public ModelView fichier() {
+        ModelView m = new ModelView();
+        m.setView("Test.jsp");
 
         return m;
     }

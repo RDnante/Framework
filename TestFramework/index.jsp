@@ -19,8 +19,8 @@
     <% //} %>
     </ul> --%>
     <form action="./save" method="post">
-        <input type="text" name="Nom" id="">
-        <input type="number" name="Nombre" id="">
+        <input type="text" name="nom" id="">
+        <input type="number" name="id" id="">
         <input type="submit" value="ok">
     </form>    
 </body>
