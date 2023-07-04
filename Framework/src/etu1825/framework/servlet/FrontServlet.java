@@ -1,9 +1,12 @@
 package etu1825.framework.servlet;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -12,15 +15,19 @@ import java.util.List;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 import etu1825.framework.AnnotationMethod;
+import etu1825.framework.FileUpload;
 import etu1825.framework.Mapping;
 import etu1825.framework.ModelView;
-import utils.*;;
+import utils.*;
 
+@MultipartConfig
 public class FrontServlet extends HttpServlet {
     HashMap<String,Mapping> MappingUrls = new HashMap<String, Mapping>();
     private static Util u = new Util();
@@ -142,11 +149,35 @@ public class FrontServlet extends HttpServlet {
                 }
             }
 
+            String contenttype = request.getContentType();
+            System.out.println("mandalo 10");
+            // sprint 9
+            if(contenttype != null && contenttype.toLowerCase().startsWith("multipart/form-data")) {
+                FileUpload file = new FileUpload();
+                for(Part part : request.getParts()) {
+                    try {
+                        file.setName(Paths.get(part.getSubmittedFileName()).getFileName().toString());
+                        InputStream in = part.getInputStream();
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        byte[] buffer = new byte[4096];
+                        int byteread;
+                        while((byteread = in.read()) != -1) {
+                            baos.write(buffer, 0, byteread);
+                        }
+                        file.setBytearray(baos.toByteArray());
+                        out.println("taile byte :"+file.getBytearray().length);
+                        } catch (Exception e) {
+                            out.println(e.getMessage()+"cause"+e.getCause());
+                        }
+                    }
+            }
+            // sprint 9
+
             RequestDispatcher dispatcher = request.getRequestDispatcher(mv.getView());
             dispatcher.forward(request, response);
 
         } catch (Exception e) {
-            out.println(e.getMessage());
+            out.println(e.getMessage()+e.getCause());
         }
     }
     
