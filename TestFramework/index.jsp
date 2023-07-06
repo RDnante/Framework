@@ -19,9 +19,15 @@
     <% //} %>
     </ul> --%>
     <form action="./save" method="post">
-        <input type="text" name="nom" id="">
-        <input type="number" name="id" id="">
+        <input type="text" name="Nom" id="">
+        <input type="number" name="Id" id="">
         <input type="submit" value="ok">
-    </form>    
+    </form> 
+
+    <h4>se connecter</h4>
+    <form action="./login" method="post">
+        <input type="text" name="nom">
+        <input type="submit" value="se connecter">
+    </form>
 </body>
 </html>
