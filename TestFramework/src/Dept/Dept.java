@@ -7,17 +7,27 @@ import etu1825.framework.ModelView;
 
 public class Dept {
     String Nom;
-    int Nombre;
+    int Id;
+    int appel;
 
-    public int getNombre() {
-        return Nombre;
+    public int getAppel() {
+        return appel;
     }
 
-    public void setNombre(int nombre) {
-        Nombre = nombre;
+    public void setAppel(int appel) {
+        this.appel = appel;
+    }
+
+    public int getId() {
+        return Id;
+    }
+
+    public void setId(int id) {
+        this.Id = id;
     }
 
     public Dept() {
+        this.setAppel(0);
     }
 
     public Dept(String nom) {
@@ -55,7 +65,7 @@ public class Dept {
         ModelView m = new ModelView();
         m.setView("Test.jsp");
 
-        String req = "insert into "+this.getNom()+" and "+this.getNombre();
+        String req = "insert into "+this.getNom()+" and "+this.getId();
         HashMap<String,Object> hash = new HashMap<String,Object>();
         hash.put("req", req);
 
@@ -79,12 +89,53 @@ public class Dept {
         return m;
     }
 
-    @AnnotationMethod(nom="/fichier", parameters = "file")
+    @AnnotationMethod(nom="/fichier")
     public ModelView fichier() {
         ModelView m = new ModelView();
-        m.setView("Test.jsp");
 
         return m;
+    }
+
+    // sprint 10
+    @AnnotationMethod(nom = "/singDept")
+    public ModelView hala() {
+        this.plus();
+        ModelView mo = new ModelView();
+        
+        HashMap<String,Object> m = new HashMap<String,Object>();
+        m.put("appel", this.getAppel());
+        m.put("class", this.getClass().getSimpleName());
+        mo.setData(m);
+        mo.setView("Test.jsp");
+
+        return mo;
+    }
+
+    public void plus() {
+        Integer test = this.getAppel();
+        this.setAppel(test+1);
+    }
+
+    @AnnotationMethod(nom = "/login",parameters = "nom")
+    public ModelView login(String nom) {
+        ModelView test = new ModelView();
+
+        if (nom == "admin") {
+            HashMap<String,Object> sess = new HashMap<String,Object>();
+            sess.put("users", "admin");
+
+            test.setSession(sess);
+        }
+        else {
+            HashMap<String,Object> sess = new HashMap<String,Object>();
+            sess.put("users", nom);
+
+            test.setSession(sess);
+        }
+
+        test.setView("Connecter.jsp");
+
+        return test;
     }
 
 }

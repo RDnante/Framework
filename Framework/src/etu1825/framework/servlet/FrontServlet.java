@@ -19,23 +19,27 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
 import etu1825.framework.AnnotationMethod;
 import etu1825.framework.FileUpload;
 import etu1825.framework.Mapping;
 import etu1825.framework.ModelView;
+import etu1825.framework.Scope;
 import utils.*;
 
 @MultipartConfig
 public class FrontServlet extends HttpServlet {
     HashMap<String,Mapping> MappingUrls = new HashMap<String, Mapping>();
+    HashMap<Class<?>,Object> MappingSingleton = new HashMap<Class<?>, Object>();
     private static Util u = new Util();
 
     public void init(PrintWriter out) throws Exception {
         try {
             List<Class<?>> classes = u.getallclass(this);
 
+            // sprint 6 angamba
             for(Class<?> c : classes) {
                 for(Method method : c.getMethods()) {
                     AnnotationMethod ann = method.getAnnotation(AnnotationMethod.class);
@@ -45,6 +49,16 @@ public class FrontServlet extends HttpServlet {
                     String lien = ann.nom();
 
                     MappingUrls.put(lien,M);
+                }
+            }
+
+            // sprint 10 singleton
+            for(Class<?> c : classes) {
+                if(c.isAnnotationPresent(Scope.class)) {
+                    if (MappingSingleton.get(c) == null) {
+                        MappingSingleton.put(c, c.getDeclaredConstructor().newInstance());
+                    }
+                    out.println(c.getSimpleName());
                 }
             }
 
@@ -76,6 +90,8 @@ public class FrontServlet extends HttpServlet {
 
         String url = request.getRequestURI().toString();
 
+        HttpSession session = request.getSession();
+
         // out.println("url"+url);
         // out.println("context"+request.getContextPath());
 
@@ -90,7 +106,15 @@ public class FrontServlet extends HttpServlet {
             }
 
             Class<?> c = Class.forName(map.getClassName());
-            Object o = c.getDeclaredConstructor().newInstance();
+            Object o = null;
+
+            // sprint 10 et sprint 8 (resaka instance)
+            if (MappingSingleton.get(c) != null) {
+                o = MappingSingleton.get(c);
+            }
+            else {
+                o = c.getDeclaredConstructor().newInstance();
+            }
 
             // prend la methode correspondant a l'appel dans l'url
             Method[] list_m = o.getClass().getDeclaredMethods();
@@ -127,6 +151,8 @@ public class FrontServlet extends HttpServlet {
             // sprint 8
             ArrayList<Class<?>> parameter_types = new ArrayList<Class<?>>();
 
+            ModelView mv = null;
+
             Class<?>[] param_class = m.getParameterTypes();
             ArrayList<Object> value = new ArrayList<>();
             if (param_class.length != 0) {
@@ -135,23 +161,16 @@ public class FrontServlet extends HttpServlet {
                 for (int i = 0; i<param_class.length; i++) {
                     value.add(u.cast_Object(param_class[i], request, p[i]));
                 }
+                mv = (ModelView) o.getClass().getMethod(map.getMethod(),param_class).invoke(o, value.toArray());
+            }
+            else {
+                mv = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
             }
             // fin Sprint 8
             
-            ModelView mv = (ModelView) o.getClass().getMethod(map.getMethod(),param_class).invoke(o, value.toArray());
-
-            HashMap<String,Object> data = mv.getData();
-
-            if (data != null) {
-                for(String key : data.keySet()) {
-                    Object donnee = data.get(key);
-                    request.setAttribute(key, donnee);
-                }
-            }
-
             String contenttype = request.getContentType();
             System.out.println("mandalo 10");
-            // sprint 9
+            // sprint 9 upload fichier
             if(contenttype != null && contenttype.toLowerCase().startsWith("multipart/form-data")) {
                 FileUpload file = new FileUpload();
                 for(Part part : request.getParts()) {
@@ -166,12 +185,37 @@ public class FrontServlet extends HttpServlet {
                         }
                         file.setBytearray(baos.toByteArray());
                         out.println("taile byte :"+file.getBytearray().length);
+                        mv = new ModelView();
+                        HashMap<String,Object> mas = new HashMap<String,Object>();
+                        mas.put("taillefichier", file.getBytearray().length);
+                        mas.put("nomfichier", file.getName());
+
+                        mv.setData(mas);
+                        mv.setView("Test.jsp");
                         } catch (Exception e) {
                             out.println(e.getMessage()+"cause"+e.getCause());
                         }
                     }
             }
-            // sprint 9
+            // fin sprint 9
+            HashMap<String,Object> data = mv.getData();
+
+            if (data != null) {
+                for(String key : data.keySet()) {
+                    Object donnee = data.get(key);
+                    request.setAttribute(key, donnee);
+                }
+            }
+
+            // sprint 11 maka ny session rehetra
+            HashMap<String,Object> sessi = mv.getSession();
+            
+            if(sessi != null) {
+                for(String key : sessi.keySet()) {
+                    Object sess = sessi.get(key);
+                    session.setAttribute(key, sess);
+                }
+            }
 
             RequestDispatcher dispatcher = request.getRequestDispatcher(mv.getView());
             dispatcher.forward(request, response);
