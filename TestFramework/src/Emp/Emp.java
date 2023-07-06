@@ -55,11 +55,14 @@ public class Emp {
         this.setAppel(test+1);
     }
 
-    @Auth(profil = "user")
+    // sprint 11
+    @Auth(profil = "admin")
     @AnnotationMethod(nom = "/verif")
     public ModelView connection() {
         ModelView v = new ModelView();
         HashMap<String,Object> hs = new HashMap<String,Object>();
+        hs.put("sprint11", "autoriser a utiliser la fonction");
+        v.setData(hs);
 
         v.setView("Connecter.jsp");
 

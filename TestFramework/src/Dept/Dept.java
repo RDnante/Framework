@@ -120,18 +120,9 @@ public class Dept {
     public ModelView login(String nom) {
         ModelView test = new ModelView();
 
-        if (nom == "admin") {
-            HashMap<String,Object> sess = new HashMap<String,Object>();
-            sess.put("users", "admin");
-
-            test.setSession(sess);
-        }
-        else {
-            HashMap<String,Object> sess = new HashMap<String,Object>();
-            sess.put("users", nom);
-
-            test.setSession(sess);
-        }
+        HashMap<String,Object> sess = new HashMap<String,Object>();
+        sess.put("users", nom);
+        test.setSession(sess);
 
         test.setView("Connecter.jsp");
 

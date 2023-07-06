@@ -1,6 +1,11 @@
 <% 
     HttpSession sess = request.getSession(); 
     String nom = (String) sess.getAttribute("users");
+
+    String hafatra = null;
+    if (request.getAttribute("sprint11") != null) {
+        hafatra = (String) request.getAttribute("sprint11");
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,5 +16,9 @@
 </head>
 <body>
     <h1>bienvenue :<% out.print(nom); %></h1>
+    <a href="./verif">lien pour acceder au fonction</a>
+    <% if(hafatra != null) { %>
+        <p><% out.print(hafatra); %></p>
+    <% } %>
 </body>
 </html>
