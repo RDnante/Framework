@@ -1,6 +1,6 @@
 <% 
     HttpSession sess = request.getSession(); 
-    String nom = (String) sess.getAttribute("users");
+    String nom = (String) sess.getAttribute("profil");
 
     String hafatra = null;
     if (request.getAttribute("sprint11") != null) {
