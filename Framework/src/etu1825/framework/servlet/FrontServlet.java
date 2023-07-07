@@ -33,10 +33,16 @@ import utils.*;
 
 @MultipartConfig
 public class FrontServlet extends HttpServlet {
+    //sprint 7
     HashMap<String,Mapping> MappingUrls = new HashMap<String, Mapping>();
+    // sprint 10
     HashMap<Class<?>,Object> MappingSingleton = new HashMap<Class<?>, Object>();
     private static Util u = new Util();
+    //sprint11
     private String user_session_name;
+    //sprint12
+    private HashMap<String,Object> MappingSession = new HashMap<String,Object>();
+
 
     
 
@@ -129,6 +135,17 @@ public class FrontServlet extends HttpServlet {
                 System.out.println("sprint 10 non singleton");
             }
 
+            // sprint 12
+            Class<?>[] hash_session_class = new Class[1];
+            hash_session_class[0] = HashMap.class;
+
+            try {
+                Method setsession = o.getClass().getMethod("setSession", hash_session_class);
+                setsession.invoke(o, this.MappingSession);
+                System.out.println("misy ilay method");
+            } catch (Exception e) {
+                System.out.println("tsy misy ilay method");
+            }
             // prend la methode correspondant a l'appel dans l'url
             Method[] list_m = o.getClass().getDeclaredMethods();
             Method m = null;
@@ -162,7 +179,7 @@ public class FrontServlet extends HttpServlet {
             // fin sprint 7
 
             
-            ArrayList<Class<?>> parameter_types = new ArrayList<Class<?>>();
+            //ArrayList<Class<?>> parameter_types = new ArrayList<Class<?>>();
 
             ModelView mv = null;
 
@@ -181,7 +198,7 @@ public class FrontServlet extends HttpServlet {
                     // sprint 8
                     if (param_class.length != 0) {
 
-                        parameter_types.addAll(new ArrayList<>(Arrays.asList(param_class)));
+                        //parameter_types.addAll(new ArrayList<>(Arrays.asList(param_class)));
                         String[] p = m.getAnnotation(AnnotationMethod.class).parameters().split(",");
                         for (int i = 0; i<param_class.length; i++) {
                             value.add(u.cast_Object(param_class[i], request, p[i]));
@@ -202,7 +219,7 @@ public class FrontServlet extends HttpServlet {
             else {
                 // sprint 8
                     if (param_class.length != 0) {
-                        parameter_types.addAll(new ArrayList<>(Arrays.asList(param_class)));
+                        //parameter_types.addAll(new ArrayList<>(Arrays.asList(param_class)));
                         String[] p = m.getAnnotation(AnnotationMethod.class).parameters().split(",");
                         for (int i = 0; i<param_class.length; i++) {
                             value.add(u.cast_Object(param_class[i], request, p[i]));
@@ -265,6 +282,8 @@ public class FrontServlet extends HttpServlet {
                 for(String key : sessi.keySet()) {
                     Object sess = sessi.get(key);
                     session.setAttribute(key, sess);
+                    // sprint 12
+                    this.MappingSession.put(key, sess);
                 }
             }
 

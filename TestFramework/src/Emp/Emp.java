@@ -12,6 +12,9 @@ public class Emp {
     Integer id;
     String nom;
     Integer appel;
+    // sprint 12
+    HashMap<String,Object> session;
+
     public Integer getAppel() {
         return appel;
     }
@@ -29,6 +32,13 @@ public class Emp {
     }
     public void setNom(String nom) {
         this.nom = nom;
+    }
+    // sprint 12
+    public HashMap<String, Object> getSession() {
+        return session;
+    }
+    public void setSession(HashMap<String, Object> session) {
+        this.session = session;
     }
     
     public Emp() {
@@ -80,5 +90,22 @@ public class Emp {
         v.setView("Connecter.jsp");
 
         return v;
+    }
+
+    // sprint12
+    @AnnotationMethod(nom = "/printsession")
+    public ModelView printsession() {
+        ModelView view = new ModelView();
+        HashMap<String,Object> data = new HashMap<String,Object>();
+
+        this.setNom("emp session");
+
+        data.put("emp", this);
+
+        view.setData(data);
+
+        view.setView("Sprint12.jsp");
+
+        return view;
     }
 }

@@ -116,6 +116,7 @@ public class Dept {
         this.setAppel(test+1);
     }
 
+    // sprint 11
     @AnnotationMethod(nom = "/login",parameters = "nom")
     public ModelView login(String nom) {
         ModelView test = new ModelView();
@@ -127,6 +128,18 @@ public class Dept {
         test.setView("Connecter.jsp");
 
         return test;
+    }
+
+    // sprint 12
+    @AnnotationMethod(nom = "/valuesession")
+    public ModelView valuesession() {
+        ModelView view = new ModelView();
+        HashMap<String,Object> sess = new HashMap<String,Object>();
+        sess.put("sprint12", "sprint12");
+        view.setSession(sess);
+
+        view.setView("index.jsp");
+        return view;
     }
 
 }
