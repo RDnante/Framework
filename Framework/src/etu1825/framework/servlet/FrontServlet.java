@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
 import etu1825.framework.AnnotationMethod;
+import etu1825.framework.Auth;
 import etu1825.framework.FileUpload;
 import etu1825.framework.Mapping;
 import etu1825.framework.ModelView;
@@ -34,8 +36,20 @@ public class FrontServlet extends HttpServlet {
     HashMap<String,Mapping> MappingUrls = new HashMap<String, Mapping>();
     HashMap<Class<?>,Object> MappingSingleton = new HashMap<Class<?>, Object>();
     private static Util u = new Util();
+    private String user_session_name;
 
-    public void init(PrintWriter out) throws Exception {
+    
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        // TODO Auto-generated method stub
+        super.init(config);
+
+        this.user_session_name = config.getInitParameter("users");
+    }
+
+    @Override
+    public void init() {
         try {
             List<Class<?>> classes = u.getallclass(this);
 
@@ -58,7 +72,6 @@ public class FrontServlet extends HttpServlet {
                     if (MappingSingleton.get(c) == null) {
                         MappingSingleton.put(c, c.getDeclaredConstructor().newInstance());
                     }
-                    out.println(c.getSimpleName());
                 }
             }
 
@@ -69,7 +82,6 @@ public class FrontServlet extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            out.println(e.getMessage());
         }
     }
 
@@ -96,7 +108,6 @@ public class FrontServlet extends HttpServlet {
         // out.println("context"+request.getContextPath());
 
         try {
-            this.init(out);
             String met = u.getUrl(request.getContextPath(), url);
             out.println("lien"+met);
             Mapping map = MappingUrls.get(met);
@@ -111,9 +122,11 @@ public class FrontServlet extends HttpServlet {
             // sprint 10 et sprint 8 (resaka instance)
             if (MappingSingleton.get(c) != null) {
                 o = MappingSingleton.get(c);
+                System.out.println("sprint 10 singleton");
             }
             else {
                 o = c.getDeclaredConstructor().newInstance();
+                System.out.println("sprint 10 non singleton");
             }
 
             // prend la methode correspondant a l'appel dans l'url
@@ -148,30 +161,68 @@ public class FrontServlet extends HttpServlet {
             }
             // fin sprint 7
 
-            // sprint 8
+            
             ArrayList<Class<?>> parameter_types = new ArrayList<Class<?>>();
 
             ModelView mv = null;
 
             Class<?>[] param_class = m.getParameterTypes();
             ArrayList<Object> value = new ArrayList<>();
-            if (param_class.length != 0) {
-                parameter_types.addAll(new ArrayList<>(Arrays.asList(param_class)));
-                String[] p = m.getAnnotation(AnnotationMethod.class).parameters().split(",");
-                for (int i = 0; i<param_class.length; i++) {
-                    value.add(u.cast_Object(param_class[i], request, p[i]));
+
+            // sprint 11
+            if (m.getAnnotation(Auth.class) != null) {
+                if (session.getAttribute(user_session_name) == null) throw new Exception("connecter vous pour acceder au fonction ="+m.getName());
+                System.out.println("sprint 11");
+
+                Auth auth = m.getAnnotation(Auth.class);
+                String users = (String) session.getAttribute(user_session_name);
+                String profil = auth.profil();
+                if (profil.equals(users)) {
+                    // sprint 8
+                    if (param_class.length != 0) {
+
+                        parameter_types.addAll(new ArrayList<>(Arrays.asList(param_class)));
+                        String[] p = m.getAnnotation(AnnotationMethod.class).parameters().split(",");
+                        for (int i = 0; i<param_class.length; i++) {
+                            value.add(u.cast_Object(param_class[i], request, p[i]));
+                        }
+                        mv = (ModelView) o.getClass().getMethod(map.getMethod(),param_class).invoke(o, value.toArray());
+                        System.out.println("sprint 8");
+                    }
+                    else {
+                        mv = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
+                        System.out.println("sprint 7");
+                    }
+                    // fin Sprint 8
                 }
-                mv = (ModelView) o.getClass().getMethod(map.getMethod(),param_class).invoke(o, value.toArray());
+                else {
+                    throw new Exception("le profile ="+users+"n'est pas autoriser a appeler la fonction ="+m.getName());
+                }
             }
             else {
-                mv = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
+                // sprint 8
+                    if (param_class.length != 0) {
+                        parameter_types.addAll(new ArrayList<>(Arrays.asList(param_class)));
+                        String[] p = m.getAnnotation(AnnotationMethod.class).parameters().split(",");
+                        for (int i = 0; i<param_class.length; i++) {
+                            value.add(u.cast_Object(param_class[i], request, p[i]));
+                        }
+                        mv = (ModelView) o.getClass().getMethod(map.getMethod(),param_class).invoke(o, value.toArray());
+                        System.out.println("sprint 8");
+                    }
+                    else {
+                        mv = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
+                        System.out.println("sprint 7");
+                    }
+                    // fin Sprint 8
             }
-            // fin Sprint 8
+            // sprint 11
             
             String contenttype = request.getContentType();
-            System.out.println("mandalo 10");
             // sprint 9 upload fichier
             if(contenttype != null && contenttype.toLowerCase().startsWith("multipart/form-data")) {
+                System.out.println("mandalo sprint 9");
+
                 FileUpload file = new FileUpload();
                 for(Part part : request.getParts()) {
                     try {
@@ -221,7 +272,7 @@ public class FrontServlet extends HttpServlet {
             dispatcher.forward(request, response);
 
         } catch (Exception e) {
-            out.println(e.getMessage()+e.getCause());
+            out.println(e.getMessage()+" cause ="+e.getCause());
         }
     }
     
