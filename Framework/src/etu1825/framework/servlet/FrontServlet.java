@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
@@ -35,8 +36,20 @@ public class FrontServlet extends HttpServlet {
     HashMap<String,Mapping> MappingUrls = new HashMap<String, Mapping>();
     HashMap<Class<?>,Object> MappingSingleton = new HashMap<Class<?>, Object>();
     private static Util u = new Util();
+    private String user_session_name;
 
-    public void init(PrintWriter out) throws Exception {
+    
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        // TODO Auto-generated method stub
+        super.init(config);
+
+        this.user_session_name = config.getInitParameter("users");
+    }
+
+    @Override
+    public void init() {
         try {
             List<Class<?>> classes = u.getallclass(this);
 
@@ -59,7 +72,6 @@ public class FrontServlet extends HttpServlet {
                     if (MappingSingleton.get(c) == null) {
                         MappingSingleton.put(c, c.getDeclaredConstructor().newInstance());
                     }
-                    out.println(c.getSimpleName());
                 }
             }
 
@@ -70,7 +82,6 @@ public class FrontServlet extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            out.println(e.getMessage());
         }
     }
 
@@ -97,7 +108,6 @@ public class FrontServlet extends HttpServlet {
         // out.println("context"+request.getContextPath());
 
         try {
-            this.init(out);
             String met = u.getUrl(request.getContextPath(), url);
             out.println("lien"+met);
             Mapping map = MappingUrls.get(met);
@@ -161,13 +171,13 @@ public class FrontServlet extends HttpServlet {
 
             // sprint 11
             if (m.getAnnotation(Auth.class) != null) {
-                if (session.getAttribute("users") == null) throw new Exception("connecter vous pour acceder au fonction ="+m.getName());
+                if (session.getAttribute(user_session_name) == null) throw new Exception("connecter vous pour acceder au fonction ="+m.getName());
                 System.out.println("sprint 11");
 
                 Auth auth = m.getAnnotation(Auth.class);
-                String users = (String) session.getAttribute("users");
+                String users = (String) session.getAttribute(user_session_name);
                 String profil = auth.profil();
-                if (profil.equals("admin") && users.equals("admin")) {
+                if (profil.equals(users)) {
                     // sprint 8
                     if (param_class.length != 0) {
 
@@ -184,22 +194,6 @@ public class FrontServlet extends HttpServlet {
                         System.out.println("sprint 7");
                     }
                     // fin Sprint 8
-                }
-                else if (!profil.equals("admin")) {
-                    if (param_class.length != 0) {
-
-                        parameter_types.addAll(new ArrayList<>(Arrays.asList(param_class)));
-                        String[] p = m.getAnnotation(AnnotationMethod.class).parameters().split(",");
-                        for (int i = 0; i<param_class.length; i++) {
-                            value.add(u.cast_Object(param_class[i], request, p[i]));
-                        }
-                        mv = (ModelView) o.getClass().getMethod(map.getMethod(),param_class).invoke(o, value.toArray());
-                        System.out.println("sprint 8");
-                    }
-                    else {
-                        mv = (ModelView) o.getClass().getMethod(map.getMethod()).invoke(o);
-                        System.out.println("sprint 7");
-                    }
                 }
                 else {
                     throw new Exception("le profile ="+users+"n'est pas autoriser a appeler la fonction ="+m.getName());

@@ -121,7 +121,7 @@ public class Dept {
         ModelView test = new ModelView();
 
         HashMap<String,Object> sess = new HashMap<String,Object>();
-        sess.put("users", nom);
+        sess.put("profil", nom);
         test.setSession(sess);
 
         test.setView("Connecter.jsp");

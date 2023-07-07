@@ -68,4 +68,17 @@ public class Emp {
 
         return v;
     }
+
+    @Auth(profil = "client")
+    @AnnotationMethod(nom = "/verifclient")
+    public ModelView conn() {
+        ModelView v = new ModelView();
+        HashMap<String,Object> hs = new HashMap<String,Object>();
+        hs.put("sprint11", "autoriser a utiliser la fonction");
+        v.setData(hs);
+
+        v.setView("Connecter.jsp");
+
+        return v;
+    }
 }
