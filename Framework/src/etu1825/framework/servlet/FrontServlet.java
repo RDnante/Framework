@@ -23,6 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
+import com.google.gson.Gson;
+
 import etu1825.framework.AnnotationMethod;
 import etu1825.framework.Auth;
 import etu1825.framework.FileUpload;
@@ -266,7 +268,18 @@ public class FrontServlet extends HttpServlet {
                     }
             }
             // fin sprint 9
+
+
+            // sprint 13
+
             HashMap<String,Object> data = mv.getData();
+
+            if (mv.getIsJson().equals(true)) {
+                System.out.println("is json");
+                Gson json = new Gson();
+                out.print("transformation json");
+                out.print(json.toJson(data));
+            }
 
             if (data != null) {
                 for(String key : data.keySet()) {
@@ -287,8 +300,10 @@ public class FrontServlet extends HttpServlet {
                 }
             }
 
-            RequestDispatcher dispatcher = request.getRequestDispatcher(mv.getView());
-            dispatcher.forward(request, response);
+            if(mv.getView() != null) {
+                RequestDispatcher dispatcher = request.getRequestDispatcher(mv.getView());
+                dispatcher.forward(request, response);
+            }
 
         } catch (Exception e) {
             out.println(e.getMessage()+" cause ="+e.getCause());

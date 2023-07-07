@@ -108,4 +108,18 @@ public class Emp {
 
         return view;
     }
+
+    // sprint 13
+    @AnnotationMethod(nom = "/json")
+    public ModelView jsonMethod() {
+        ModelView view = new ModelView();
+        HashMap<String,Object> data = new HashMap<String,Object>();
+        data.put("name_json", "nom");
+
+        view.setIsJson(true);
+
+        view.setData(data);
+
+        return view;
+    }
 }
